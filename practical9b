@@ -1,0 +1,61 @@
+b) Implement MapReduce operation with suitable example using MongoDB.
+
+// ----------------------------------------------------------
+// 🟢 STEP 1 — Use your database
+// ----------------------------------------------------------
+use OnlineShoppingDB;
+
+
+// ----------------------------------------------------------
+// 🟢 STEP 2 — Create sample 'orders' collection (if not exists)
+// ----------------------------------------------------------
+db.orders.insertMany([
+  { _id: 1, product: "Laptop", quantity: 1, total_amount: 55000 },
+  { _id: 2, product: "Smartphone", quantity: 2, total_amount: 50000 },
+  { _id: 3, product: "Laptop", quantity: 1, total_amount: 55000 },
+  { _id: 4, product: "Headphones", quantity: 3, total_amount: 6000 },
+  { _id: 5, product: "Smartwatch", quantity: 2, total_amount: 10000 },
+  { _id: 6, product: "Smartphone", quantity: 1, total_amount: 25000 }
+]);
+
+
+// ----------------------------------------------------------
+// 🟡 STEP 3 — Define MAP function
+// ----------------------------------------------------------
+// The MAP function emits (key, value) pairs
+// Here, key = product name, value = total_amount of that product
+
+var mapFunction = function() {
+    emit(this.product, this.total_amount);
+};
+
+
+// ----------------------------------------------------------
+// 🔵 STEP 4 — Define REDUCE function
+// ----------------------------------------------------------
+// The REDUCE function groups all amounts for same product
+// and returns their total sum
+
+var reduceFunction = function(key, values) {
+    return Array.sum(values);
+};
+
+
+// ----------------------------------------------------------
+// 🟣 STEP 5 — Execute MapReduce
+// ----------------------------------------------------------
+// The result will be stored in a new collection named 'product_sales_total'
+
+db.orders.mapReduce(
+    mapFunction,
+    reduceFunction,
+    {
+        out: "product_sales_total"
+    }
+);
+
+
+// ----------------------------------------------------------
+// 🔴 STEP 6 — View the MapReduce output
+// ----------------------------------------------------------
+db.product_sales_total.find().pretty();
