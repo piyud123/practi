@@ -1,0 +1,174 @@
+-- =============================================================
+-- 🎯 Question 3: Company Employee Database Application
+-- Use of Joins, Subqueries, and Views
+-- =============================================================
+
+
+-- =============================================================
+-- Step 1️⃣ : Create Database
+-- =============================================================
+CREATE DATABASE CompanyDB;
+USE CompanyDB;
+
+
+-- =============================================================
+-- Step 2️⃣ : Create Table - Department
+-- =============================================================
+CREATE TABLE Department (
+    DeptID INT PRIMARY KEY,
+    DeptName VARCHAR(50) NOT NULL,
+    Location VARCHAR(50)
+);
+
+
+-- =============================================================
+-- Step 3️⃣ : Create Table - Employee
+-- =============================================================
+CREATE TABLE Employee (
+    EmpID INT PRIMARY KEY,
+    EmpName VARCHAR(50) NOT NULL,
+    DeptID INT,
+    Salary DECIMAL(10,2),
+    JobTitle VARCHAR(50),
+    FOREIGN KEY (DeptID) REFERENCES Department(DeptID)
+);
+
+
+-- =============================================================
+-- Step 4️⃣ : Create Table - Performance
+-- =============================================================
+CREATE TABLE Performance (
+    PerfID INT PRIMARY KEY,
+    EmpID INT,
+    Rating INT CHECK (Rating BETWEEN 1 AND 10),
+    ReviewYear INT,
+    FOREIGN KEY (EmpID) REFERENCES Employee(EmpID)
+);
+
+
+-- =============================================================
+-- Step 5️⃣ : Insert Data into Department
+-- =============================================================
+INSERT INTO Department VALUES
+(1, 'HR', 'Pune'),
+(2, 'IT', 'Mumbai'),
+(3, 'Sales', 'Delhi'),
+(4, 'Finance', 'Bangalore');
+
+
+-- =============================================================
+-- Step 6️⃣ : Insert Data into Employee
+-- =============================================================
+INSERT INTO Employee VALUES
+(101, 'Aarav Sharma', 2, 75000, 'Software Engineer'),
+(102, 'Neha Verma', 1, 50000, 'HR Executive'),
+(103, 'Rohit Patil', 3, 60000, 'Sales Manager'),
+(104, 'Priya Joshi', 2, 95000, 'Team Lead'),
+(105, 'Karan Mehta', 4, 85000, 'Accountant'),
+(106, 'Sneha Deshmukh', 3, 55000, 'Sales Executive'),
+(107, 'Raj Kumar', 4, 65000, 'Financial Analyst'),
+(108, 'Simran Kaur', 2, 100000, 'Project Manager');
+
+
+-- =============================================================
+-- Step 7️⃣ : Insert Data into Performance
+-- =============================================================
+INSERT INTO Performance VALUES
+(201, 101, 8, 2024),
+(202, 102, 7, 2024),
+(203, 103, 9, 2024),
+(204, 104, 10, 2024),
+(205, 105, 6, 2024),
+(206, 106, 5, 2024),
+(207, 107, 7, 2024),
+(208, 108, 9, 2024);
+
+
+-- =============================================================
+-- Step 8️⃣ : Query 1 - INNER JOIN
+-- Department-wise employee list
+-- =============================================================
+SELECT e.EmpName, e.JobTitle, d.DeptName, d.Location
+FROM Employee e
+INNER JOIN Department d ON e.DeptID = d.DeptID;
+
+
+-- =============================================================
+-- Step 9️⃣ : Query 2 - LEFT JOIN
+-- Show all departments even if no employees exist
+-- =============================================================
+SELECT d.DeptName, e.EmpName, e.Salary
+FROM Department d
+LEFT JOIN Employee e ON d.DeptID = e.DeptID;
+
+
+-- =============================================================
+-- Step 🔟 : Query 3 - RIGHT JOIN
+-- Show all employees and their department details
+-- =============================================================
+SELECT e.EmpName, d.DeptName, d.Location
+FROM Employee e
+RIGHT JOIN Department d ON e.DeptID = d.DeptID;
+
+
+-- =============================================================
+-- Step 11️⃣ : Query 4 - Subquery (Highest Paid Employee)
+-- =============================================================
+SELECT EmpName, Salary
+FROM Employee
+WHERE Salary = (SELECT MAX(Salary) FROM Employee);
+
+
+-- =============================================================
+-- Step 12️⃣ : Query 5 - Subquery with Comparison
+-- Employees earning more than average salary
+-- =============================================================
+SELECT EmpName, Salary
+FROM Employee
+WHERE Salary > (SELECT AVG(Salary) FROM Employee);
+
+
+-- =============================================================
+-- Step 13️⃣ : Query 6 - JOIN with Aggregation
+-- Average Salary per Department
+-- =============================================================
+SELECT d.DeptName, AVG(e.Salary) AS AvgSalary
+FROM Employee e
+JOIN Department d ON e.DeptID = d.DeptID
+GROUP BY d.DeptName;
+
+
+-- =============================================================
+-- Step 14️⃣ : Query 7 - Subquery + JOIN
+-- Employees with performance rating >= 8
+-- =============================================================
+SELECT EmpName, Salary, Rating
+FROM Employee
+WHERE EmpID IN (SELECT EmpID FROM Performance WHERE Rating >= 8);
+
+
+-- =============================================================
+-- Step 15️⃣ : Query 8 - Creating a VIEW
+-- View showing employee details with department and rating
+-- =============================================================
+CREATE VIEW Emp_Performance_View AS
+SELECT e.EmpName, e.JobTitle, d.DeptName, e.Salary, p.Rating
+FROM Employee e
+JOIN Department d ON e.DeptID = d.DeptID
+JOIN Performance p ON e.EmpID = p.EmpID;
+
+
+-- =============================================================
+-- Step 16️⃣ : Query 9 - SELECT from View
+-- =============================================================
+SELECT * FROM Emp_Performance_View;
+
+
+-- =============================================================
+-- Step 17️⃣ : Query 🔟 - Using ORDER BY and LIMIT
+-- Top 3 highest paid employees
+-- =============================================================
+SELECT EmpName, Salary, DeptID
+FROM Employee
+ORDER BY Salary DESC
+LIMIT 3;
