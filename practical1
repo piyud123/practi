@@ -1,0 +1,141 @@
+-- --------------------------------------------
+-- 🎯 CREATE DATABASE for College Library System
+-- --------------------------------------------
+DROP DATABASE IF EXISTS CollegeLibrary;
+CREATE DATABASE CollegeLibrary;
+USE CollegeLibrary;
+
+-- --------------------------------------------
+-- 🧱 CREATE TABLES (DDL - Data Definition Language)
+-- Tables: Student, Book, Transaction
+-- --------------------------------------------
+
+-- 🧍‍♂️ Student Table
+CREATE TABLE Student (
+    StudentID INT AUTO_INCREMENT PRIMARY KEY,
+    Name VARCHAR(50) NOT NULL,
+    Department VARCHAR(30),
+    Year INT NOT NULL CHECK (Year BETWEEN 1 AND 4),
+    Email VARCHAR(100) UNIQUE
+);
+
+-- 📚 Book Table
+CREATE TABLE Book (
+    BookID INT AUTO_INCREMENT PRIMARY KEY,
+    Title VARCHAR(100) NOT NULL,
+    Author VARCHAR(50),
+    Publisher VARCHAR(50),
+    Price DECIMAL(8,2) CHECK (Price > 0),
+    Quantity INT NOT NULL CHECK (Quantity >= 0)
+);
+
+-- 🔄 Transaction Table
+-- Foreign Keys link with Student and Book tables
+CREATE TABLE `Transaction` (
+    TransactionID INT AUTO_INCREMENT PRIMARY KEY,
+    StudentID INT NOT NULL,
+    BookID INT NOT NULL,
+    IssueDate DATE NOT NULL,
+    ReturnDate DATE,
+    FOREIGN KEY (StudentID) REFERENCES Student(StudentID) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (BookID) REFERENCES Book(BookID) ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+-- --------------------------------------------
+-- 🧾 INSERT DATA (DML - Data Manipulation Language)
+-- Inserting sample records into all tables
+-- --------------------------------------------
+
+-- 👨‍🎓 Student Data
+INSERT INTO Student (StudentID, Name, Department, Year, Email) VALUES
+(101, 'Ravi Patil', 'Computer', 3, 'ravi.patil@gmail.com'),
+(102, 'Sneha Joshi', 'IT', 2, 'sneha.joshi@gmail.com'),
+(103, 'Amit Deshmukh', 'ENTC', 1, 'amit.deshmukh@gmail.com'),
+(104, 'Priya Kulkarni', 'Mechanical', 4, 'priya.kulkarni@gmail.com');
+
+-- 📖 Book Data
+INSERT INTO Book (BookID, Title, Author, Publisher, Price, Quantity) VALUES
+(201, 'Database Management Systems', 'Ramez Elmasri', 'Pearson', 550.00, 5),
+(202, 'Operating System Concepts', 'Silberschatz', 'Wiley', 620.00, 3),
+(203, 'Computer Networks', 'Andrew Tanenbaum', 'PHI', 500.00, 4),
+(204, 'Let Us C', 'Yashwant Kanetkar', 'BPB', 300.00, 6),
+(205, 'Python Programming', 'Guido van Rossum', 'OReilly', 450.00, 2);
+
+-- 🔁 Transaction Data (book issue/return info)
+INSERT INTO `Transaction` (TransactionID, StudentID, BookID, IssueDate, ReturnDate) VALUES
+(301, 101, 201, '2025-11-01', '2025-11-08'),
+(302, 102, 203, '2025-11-03', NULL),
+(303, 103, 204, '2025-11-04', '2025-11-10'),
+(304, 104, 205, '2025-11-05', NULL),
+(305, 101, 202, '2025-11-06', NULL);
+
+-- --------------------------------------------
+-- 👁️ CREATE VIEW (Virtual Table)
+-- Purpose: Combine Student, Book, Transaction data together
+-- --------------------------------------------
+CREATE VIEW StudentTransactions AS
+SELECT 
+    s.StudentID, 
+    s.Name AS StudentName, 
+    b.BookID, 
+    b.Title AS BookTitle, 
+    t.IssueDate, 
+    t.ReturnDate
+FROM Student s
+JOIN `Transaction` t ON s.StudentID = t.StudentID
+JOIN Book b ON b.BookID = t.BookID;
+
+-- View check query
+SELECT * FROM StudentTransactions;
+
+-- --------------------------------------------
+-- ⚡ CREATE INDEX 
+-- Purpose: Speed up searching by Book title
+-- --------------------------------------------
+CREATE INDEX idx_book_title ON Book(Title);
+
+-- --------------------------------------------
+-- 🪞 SYNONYM Alternative (MySQL doesn’t support CREATE SYNONYM)
+-- Using VIEW instead as shortcut (acts like synonym)
+-- --------------------------------------------
+CREATE OR REPLACE VIEW LibStudents AS SELECT * FROM Student;
+
+-- Shortcut access
+SELECT * FROM LibStudents;
+
+-- --------------------------------------------
+-- 🔍 TESTING QUERIES (for checking data)
+-- --------------------------------------------
+
+-- 1️⃣ Show all Students
+SELECT * FROM Student;
+
+-- 2️⃣ Show all Books
+SELECT * FROM Book;
+
+-- 3️⃣ Show all Transactions
+SELECT * FROM `Transaction`;
+
+-- 4️⃣ Show all combined data from the View
+SELECT * FROM StudentTransactions;
+
+-- 5️⃣ Show books currently issued (not yet returned)
+SELECT s.Name, b.Title, t.IssueDate
+FROM Student s
+JOIN `Transaction` t ON s.StudentID = t.StudentID
+JOIN Book b ON b.BookID = t.BookID
+WHERE t.ReturnDate IS NULL;
+
+-- 6️⃣ Show all books having price greater than 500
+SELECT Title, Price FROM Book WHERE Price > 500;
+
+-- 7️⃣ Show count of total books issued by each student
+SELECT s.Name, COUNT(t.BookID) AS TotalBooks
+FROM Student s
+JOIN `Transaction` t ON s.StudentID = t.StudentID
+GROUP BY s.Name;
+
+-- --------------------------------------------
+-- ✅ END OF PROJECT
+-- College Library Management System Complete
+-- --------------------------------------------
