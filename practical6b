@@ -1,0 +1,67 @@
+Write a database trigger on Library table. The System should keep track of the records 
+that are being updated or deleted. The old value of updated or deleted records should be 
+added in Library_Audit table.
+
+-- 🔹 STEP 1: Create main Library table
+CREATE TABLE Library (
+    Book_ID NUMBER PRIMARY KEY,
+    Book_Name VARCHAR2(50),
+    Author VARCHAR2(50),
+    Price NUMBER
+);
+
+-- 🔹 STEP 2: Insert sample data into Library table
+INSERT INTO Library VALUES (1, 'DBMS Concepts', 'Navathe', 550);
+INSERT INTO Library VALUES (2, 'Operating System', 'Galvin', 650);
+INSERT INTO Library VALUES (3, 'Computer Networks', 'Tanenbaum', 700);
+INSERT INTO Library VALUES (4, 'Data Structures', 'Lipschutz', 500);
+
+COMMIT;
+
+-- 🔹 STEP 3: Create Library_Audit table to store old records
+CREATE TABLE Library_Audit (
+    Audit_ID NUMBER GENERATED ALWAYS AS IDENTITY,
+    Book_ID NUMBER,
+    Book_Name VARCHAR2(50),
+    Author VARCHAR2(50),
+    Price NUMBER,
+    Operation_Type VARCHAR2(20),
+    Operation_Date DATE
+);
+
+-- 🔹 STEP 4: Create Trigger to store OLD record when UPDATE or DELETE happens
+CREATE OR REPLACE TRIGGER trg_Library_Audit
+AFTER UPDATE OR DELETE
+ON Library
+FOR EACH ROW
+BEGIN
+    INSERT INTO Library_Audit (Book_ID, Book_Name, Author, Price, Operation_Type, Operation_Date)
+    VALUES (
+        :OLD.Book_ID,
+        :OLD.Book_Name,
+        :OLD.Author,
+        :OLD.Price,
+        CASE
+            WHEN UPDATING THEN 'UPDATED'
+            WHEN DELETING THEN 'DELETED'
+        END,
+        SYSDATE
+    );
+END;
+/
+
+-- 🔹 STEP 5: Test the Trigger with UPDATE operation
+UPDATE Library
+SET Price = 800
+WHERE Book_ID = 3;
+
+-- 🔹 STEP 6: Test the Trigger with DELETE operation
+DELETE FROM Library
+WHERE Book_ID = 4;
+
+COMMIT;
+
+-- 🔹 STEP 7: Display the data of both tables
+SELECT * FROM Library;
+
+SELECT * FROM Library_Audit;
