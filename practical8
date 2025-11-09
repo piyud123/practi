@@ -1,0 +1,104 @@
+Design and develop a MongoDB database for an Online Shopping Application.
+Implement and demonstrate CRUD (Create, Read, Update, Delete) operations using MongoDB queries, including logical operators and the save() method.
+
+// ---------------------------------------------
+// 🟢 STEP 1 — Create / Switch to Database
+// ---------------------------------------------
+use OnlineShoppingDB;
+
+
+// ---------------------------------------------
+// 🟢 STEP 2 — Create and Insert Documents (CREATE operation)
+// ---------------------------------------------
+
+// Insert Customers
+db.customers.insertMany([
+  { _id: 1, name: "Rahul Sharma", email: "rahul@gmail.com", city: "Mumbai", phone: "9876543210" },
+  { _id: 2, name: "Priya Patel", email: "priya@gmail.com", city: "Pune", phone: "9988776655" },
+  { _id: 3, name: "Amit Verma", email: "amit@gmail.com", city: "Delhi", phone: "9123456780" }
+]);
+
+// Insert Products
+db.products.insertMany([
+  { _id: 101, name: "Laptop", brand: "HP", price: 55000, stock: 10 },
+  { _id: 102, name: "Smartphone", brand: "Samsung", price: 25000, stock: 20 },
+  { _id: 103, name: "Headphones", brand: "Boat", price: 2000, stock: 50 },
+  { _id: 104, name: "Smartwatch", brand: "Noise", price: 5000, stock: 15 }
+]);
+
+// Insert Orders
+db.orders.insertMany([
+  { _id: 201, customer_id: 1, product_id: 101, quantity: 1, order_date: new Date("2025-11-10"), total_amount: 55000 },
+  { _id: 202, customer_id: 2, product_id: 103, quantity: 2, order_date: new Date("2025-11-09"), total_amount: 4000 }
+]);
+
+
+// ---------------------------------------------
+// 🟡 STEP 3 — READ Operations (Retrieve data)
+// ---------------------------------------------
+
+// Display all customers
+db.customers.find().pretty();
+
+// Find customers from Mumbai
+db.customers.find({ city: "Mumbai" });
+
+// Find products priced greater than 10000 (comparison operator)
+db.products.find({ price: { $gt: 10000 } });
+
+// Find products that are either HP brand or price below 3000 (logical OR)
+db.products.find({ $or: [ { brand: "HP" }, { price: { $lt: 3000 } } ] });
+
+// Find orders where quantity >= 2 AND total_amount < 10000 (logical AND)
+db.orders.find({ $and: [ { quantity: { $gte: 2 } }, { total_amount: { $lt: 10000 } } ] });
+
+
+// ---------------------------------------------
+// 🔵 STEP 4 — UPDATE Operations
+// ---------------------------------------------
+
+// Update one customer’s city
+db.customers.updateOne(
+  { name: "Amit Verma" },
+  { $set: { city: "Nagpur" } }
+);
+
+// Increase product stock by 5 for all products under 10000
+db.products.updateMany(
+  { price: { $lt: 10000 } },
+  { $inc: { stock: 5 } }
+);
+
+
+// ---------------------------------------------
+// 🟣 STEP 5 — Using save() method
+// ---------------------------------------------
+// If document exists with same _id → update it
+// If not → insert new document
+
+db.customers.save({
+  _id: 4,
+  name: "Sneha Joshi",
+  email: "sneha@gmail.com",
+  city: "Bangalore",
+  phone: "9876000000"
+});
+
+
+// ---------------------------------------------
+// 🔴 STEP 6 — DELETE Operations
+// ---------------------------------------------
+
+// Delete one product
+db.products.deleteOne({ name: "Smartwatch" });
+
+// Delete all orders where total_amount < 5000
+db.orders.deleteMany({ total_amount: { $lt: 5000 } });
+
+
+// ---------------------------------------------
+// ⚪ STEP 7 — Display final data after operations
+// ---------------------------------------------
+db.customers.find().pretty();
+db.products.find().pretty();
+db.orders.find().pretty();
