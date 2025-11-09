@@ -1,0 +1,74 @@
+Write a PL/SQL block of code using parameterized Cursor that will merge the data available in the newly created table N_RollCall with the data available in the table O_RollCall. If the data in the first table already exist in the second table then that data should be skipped.
+
+-- 🔹 STEP 1: Create old roll call table (O_RollCall)
+CREATE TABLE O_RollCall (
+    RollNo NUMBER PRIMARY KEY,
+    Name VARCHAR2(50),
+    Subject VARCHAR2(50)
+);
+
+-- 🔹 STEP 2: Insert sample data into old table
+INSERT INTO O_RollCall VALUES (101, 'Ravi', 'DBMS');
+INSERT INTO O_RollCall VALUES (102, 'Sneha', 'CN');
+INSERT INTO O_RollCall VALUES (103, 'Amit', 'OS');
+
+-- 🔹 STEP 3: Create new roll call table (N_RollCall)
+CREATE TABLE N_RollCall (
+    RollNo NUMBER,
+    Name VARCHAR2(50),
+    Subject VARCHAR2(50)
+);
+
+-- 🔹 STEP 4: Insert new data into N_RollCall
+INSERT INTO N_RollCall VALUES (102, 'Sneha', 'CN');   -- already exists
+INSERT INTO N_RollCall VALUES (104, 'Priya', 'DBMS'); -- new
+INSERT INTO N_RollCall VALUES (105, 'Karan', 'DS');   -- new
+
+COMMIT;
+
+-- 🔹 STEP 5: Create PL/SQL Block using Parameterized Cursor
+SET SERVEROUTPUT ON;
+
+DECLARE
+    -- Define parameterized cursor to fetch new data from N_RollCall
+    CURSOR c_merge(p_roll NUMBER) IS
+        SELECT RollNo, Name, Subject
+        FROM N_RollCall
+        WHERE RollNo = p_roll;
+
+    v_roll N_RollCall.RollNo%TYPE;
+    v_name N_RollCall.Name%TYPE;
+    v_sub  N_RollCall.Subject%TYPE;
+
+    -- Variable to check if RollNo already exists
+    v_exists NUMBER;
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('--- Merging Data from N_RollCall to O_RollCall ---');
+
+    -- Loop through all records from N_RollCall
+    FOR rec IN (SELECT RollNo FROM N_RollCall) LOOP
+        -- Check if record already exists in old table
+        SELECT COUNT(*) INTO v_exists FROM O_RollCall WHERE RollNo = rec.RollNo;
+
+        IF v_exists = 0 THEN
+            -- Open cursor for that RollNo
+            OPEN c_merge(rec.RollNo);
+            FETCH c_merge INTO v_roll, v_name, v_sub;
+
+            -- Insert into old table (since it does not exist)
+            INSERT INTO O_RollCall VALUES (v_roll, v_name, v_sub);
+
+            DBMS_OUTPUT.PUT_LINE('Inserted RollNo: ' || v_roll || ' Name: ' || v_name);
+
+            CLOSE c_merge;
+        ELSE
+            DBMS_OUTPUT.PUT_LINE('Skipped RollNo: ' || rec.RollNo || ' (Already Exists)');
+        END IF;
+    END LOOP;
+
+    DBMS_OUTPUT.PUT_LINE('--- Merge Completed Successfully ---');
+END;
+/
+
+-- 🔹 STEP 6: Verify the final O_RollCall table data
+SELECT * FROM O_RollCall;
