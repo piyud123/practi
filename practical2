@@ -1,0 +1,168 @@
+-- =============================================================
+-- 🎯 Question: Design and implement at least 10 SQL DML queries 
+-- for a Student Result Management System.
+-- Perform: INSERT, UPDATE, DELETE, SELECT using
+-- Arithmetic, Comparison, Logical, Set Operators, and Built-in Functions.
+-- Tables: Student, Marks, Result
+-- =============================================================
+
+
+-- =============================================================
+-- Step 1️⃣ : Create Database
+-- =============================================================
+CREATE DATABASE StudentResultDB;
+USE StudentResultDB;
+
+
+-- =============================================================
+-- Step 2️⃣ : Create Table - Student
+-- =============================================================
+CREATE TABLE Student (
+    StudentID INT PRIMARY KEY,
+    Name VARCHAR(50) NOT NULL,
+    Department VARCHAR(30),
+    Year INT CHECK (Year BETWEEN 1 AND 4),
+    Email VARCHAR(50) UNIQUE
+);
+
+
+-- =============================================================
+-- Step 3️⃣ : Create Table - Marks
+-- =============================================================
+CREATE TABLE Marks (
+    MarkID INT PRIMARY KEY,
+    StudentID INT,
+    Subject VARCHAR(50),
+    MarksObtained INT CHECK (MarksObtained BETWEEN 0 AND 100),
+    FOREIGN KEY (StudentID) REFERENCES Student(StudentID)
+);
+
+
+-- =============================================================
+-- Step 4️⃣ : Create Table - Result
+-- =============================================================
+CREATE TABLE Result (
+    ResultID INT PRIMARY KEY,
+    StudentID INT,
+    TotalMarks INT,
+    Percentage DECIMAL(5,2),
+    Grade VARCHAR(5),
+    FOREIGN KEY (StudentID) REFERENCES Student(StudentID)
+);
+
+
+-- =============================================================
+-- Step 5️⃣ : Insert Sample Data into Student
+-- =============================================================
+INSERT INTO Student VALUES
+(1, 'Aarav Patil', 'Computer', 2, 'aarav@gmail.com'),
+(2, 'Sneha Deshmukh', 'IT', 3, 'sneha@gmail.com'),
+(3, 'Rohan Joshi', 'Mechanical', 1, 'rohan@gmail.com'),
+(4, 'Priya Kulkarni', 'Computer', 4, 'priya@gmail.com'),
+(5, 'Karan Shah', 'Civil', 2, 'karan@gmail.com');
+
+
+-- =============================================================
+-- Step 6️⃣ : Insert Sample Data into Marks
+-- =============================================================
+INSERT INTO Marks VALUES
+(101, 1, 'DBMS', 85),
+(102, 1, 'Java', 78),
+(103, 2, 'DBMS', 92),
+(104, 2, 'Java', 88),
+(105, 3, 'Maths', 56),
+(106, 3, 'Physics', 60),
+(107, 4, 'DBMS', 95),
+(108, 4, 'Java', 90),
+(109, 5, 'Maths', 65),
+(110, 5, 'Physics', 70);
+
+
+-- =============================================================
+-- Step 7️⃣ : Insert Data into Result
+-- =============================================================
+INSERT INTO Result VALUES
+(201, 1, 163, 81.5, 'A'),
+(202, 2, 180, 90.0, 'A+'),
+(203, 3, 116, 58.0, 'C'),
+(204, 4, 185, 92.5, 'A+'),
+(205, 5, 135, 67.5, 'B');
+
+
+-- =============================================================
+-- Step 8️⃣ : DML Query 1 - SELECT (Simple Display)
+-- =============================================================
+SELECT * FROM Student;
+
+
+-- =============================================================
+-- Step 9️⃣ : DML Query 2 - SELECT with WHERE and Comparison Operator
+-- Show students whose percentage is greater than 80
+-- =============================================================
+SELECT StudentID, Percentage, Grade FROM Result
+WHERE Percentage > 80;
+
+
+-- =============================================================
+-- Step 🔟 : DML Query 3 - SELECT with Logical Operator (AND)
+-- Show Computer department students with Year >= 2
+-- =============================================================
+SELECT Name, Department, Year FROM Student
+WHERE Department = 'Computer' AND Year >= 2;
+
+
+-- =============================================================
+-- Step 11️⃣ : DML Query 4 - SELECT with Arithmetic Operator
+-- Calculate Total Marks after adding 5 bonus marks
+-- =============================================================
+SELECT StudentID, TotalMarks, (TotalMarks + 5) AS NewTotalMarks FROM Result;
+
+
+-- =============================================================
+-- Step 12️⃣ : DML Query 5 - SELECT with Built-in Function (AVG)
+-- Find average marks of all students
+-- =============================================================
+SELECT AVG(TotalMarks) AS AverageMarks FROM Result;
+
+
+-- =============================================================
+-- Step 13️⃣ : DML Query 6 - UPDATE Operation
+-- Increase marks by 5 for students scoring less than 60
+-- =============================================================
+UPDATE Marks
+SET MarksObtained = MarksObtained + 5
+WHERE MarksObtained < 60;
+
+
+-- =============================================================
+-- Step 14️⃣ : DML Query 7 - DELETE Operation
+-- Delete records of students with percentage less than 60
+-- =============================================================
+DELETE FROM Result
+WHERE Percentage < 60;
+
+
+-- =============================================================
+-- Step 15️⃣ : DML Query 8 - SELECT with ORDER BY
+-- Display students sorted by TotalMarks in descending order
+-- =============================================================
+SELECT * FROM Result
+ORDER BY TotalMarks DESC;
+
+
+-- =============================================================
+-- Step 16️⃣ : DML Query 9 - SELECT with SET Operator (UNION)
+-- Combine Computer and IT department students
+-- =============================================================
+SELECT Name, Department FROM Student WHERE Department = 'Computer'
+UNION
+SELECT Name, Department FROM Student WHERE Department = 'IT';
+
+
+-- =============================================================
+-- Step 17️⃣ : DML Query 🔟 - SELECT with Built-in Function (COUNT)
+-- Count total number of students in each department
+-- =============================================================
+SELECT Department, COUNT(*) AS TotalStudents
+FROM Student
+GROUP BY Department;
